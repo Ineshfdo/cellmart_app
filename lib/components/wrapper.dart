@@ -130,6 +130,7 @@ class _WrapperState extends State<Wrapper> {
             icon: Icon(Icons.email_outlined),
             label: 'Contact Us',
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.info_outline),
             label: 'About Us',
