@@ -307,8 +307,10 @@ class _HomescreenState extends State<Homescreen> {
             const InfoSection(
               title: "Why You Chose CellMart",
               imagePath: "assets/images/allphones.webp",
-              content1: "At CellMart, we prioritize our customers above all.",
-              content2: "Reach out via email, phone, or social media anytime.",
+              content1:
+                  "At CellMart, our customers are at the heart of everything we do. We are committed to delivering quality products, reliable service, and a smooth shopping experience. Every decision we make is driven by customer satisfaction, trust, and long-term relationships built through care, value, and consistency.",
+              content2:
+                  "Feel free to reach out to us anytime via email, phone, or our social media channels for assistance, inquiries, or support. We’re always happy to help and ensure you have the best possible experience with CellMart.",
             ),
 
             const Divider(),

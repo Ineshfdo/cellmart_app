@@ -4,6 +4,7 @@ import 'package:cellmart_app/screens/CartScreen.dart';
 import 'package:cellmart_app/screens/HomeScreen.dart';
 import 'package:cellmart_app/screens/ProductsScreen.dart';
 import 'package:cellmart_app/screens/SignupScreen.dart';
+import 'package:cellmart_app/screens/FavoritesScreen.dart';
 import 'package:cellmart_app/screens/loginScreen.dart';
 import 'package:flutter/material.dart';
 
@@ -29,7 +30,7 @@ class _WrapperState extends State<Wrapper> {
     ];
   }
 
-  // 🔐 LOGIN & SIGNUP → SLIDE FROM LEFT
+  // LOGIN & SIGNUP → SLIDE FROM LEFT
   void slideFromLeftNavigate(Widget page) {
     Navigator.push(
       context,
@@ -51,7 +52,7 @@ class _WrapperState extends State<Wrapper> {
     );
   }
 
-  // 🛒 CART → SLIDE FROM RIGHT
+  //  CART → SLIDE FROM RIGHT
   void slideFromRightNavigate(Widget page) {
     Navigator.push(
       context,
@@ -83,7 +84,7 @@ class _WrapperState extends State<Wrapper> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // 🔐 LOGIN & SIGN UP
+            // LOGIN & SIGN UP
             Row(
               children: [
                 ElevatedButton(
@@ -118,9 +119,24 @@ class _WrapperState extends State<Wrapper> {
               ],
             ),
 
-            // 🛒 CART
+            // CART
             Row(
               children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(15),
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: () {
+                    slideFromRightNavigate(const FavoritesScreen());
+                  },
+                  child: const Icon(
+                    Icons.favorite,
+                    size: 22,
+                    color: Colors.white,
+                  ),
+                ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),

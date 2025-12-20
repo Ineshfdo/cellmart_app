@@ -4,6 +4,11 @@ import 'package:cellmart_app/screens/cartScreen.dart';
 import 'package:cellmart_app/components/cart_storage.dart';
 import 'package:flutter/material.dart';
 
+// ✅ Favorites imports
+import 'package:cellmart_app/db/favorites_db.dart';
+import 'package:cellmart_app/models/favorite_product.dart';
+import 'package:cellmart_app/screens/FavoritesScreen.dart';
+
 class ProductDetailScreen extends StatefulWidget {
   final String imagepath;
   final String name;
@@ -112,7 +117,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const SizedBox(height: 10),
             const Divider(),
 
-            /// 🔹 DESCRIPTION (KEPT)
+            /// DESCRIPTION
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 7, 3),
               child: Text(
@@ -138,7 +143,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const Divider(),
             const SizedBox(height: 10),
 
-            /// 🎨 Color Dropdown
+            /// 🎨 Color Dropdown (UNCHANGED)
             _dropdownSection(
               title: "Choose the color",
               value: color,
@@ -149,7 +154,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               },
             ),
 
-            /// ⏳ Warranty Dropdown
+            /// ⏳ Warranty Dropdown (UNCHANGED)
             _dropdownSection(
               title: "Choose the warranty",
               value: warranty,
@@ -162,46 +167,94 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             const SizedBox(height: 30),
 
-            /// Add to Cart Button
-            Center(
-              child: SizedBox(
-                width: 200,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final product = {
-                      "productName": widget.name,
-                      "productPrice": widget.price,
-                      "productStats": widget.stats,
-                      "productImage": widget.imagepath,
-                      "productColor": color,
-                      "productWarranty": warranty,
-                    };
+            /// BUTTONS
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                /// ADD TO CART
+                SizedBox(
+                  width: 160,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final product = {
+                        "productName": widget.name,
+                        "productPrice": widget.price,
+                        "productStats": widget.stats,
+                        "productImage": widget.imagepath,
+                        "productColor": color,
+                        "productWarranty": warranty,
+                      };
 
-                    CartStorage.addItem(product);
+                      CartStorage.addItem(product);
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CartScreen(),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CartScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0A4C8A),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A4C8A),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  child: const Text(
-                    "Add to Cart",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                    child: const Text(
+                      "Add to Cart",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
+
+                const SizedBox(width: 12),
+
+                /// 💚 ADD TO FAVORITES → GO TO FAVORITES SCREEN
+                SizedBox(
+                  width: 160,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await FavoritesDB.addFavorite(
+                        FavoriteProduct(
+                          name: widget.name,
+                          price: widget.price,
+                          stats: widget.stats,
+                          image: widget.imagepath,
+                          color: color,
+                          warranty: warranty,
+                          description: widget.description,
+                        ),
+                      );
+
+                      // ✅ Navigate to Favorites Screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const FavoritesScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Add to Favorites",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 50),
@@ -213,7 +266,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  /// 🔥 Dark-mode-safe animated dropdown
+  /// 🔥 Dark-mode-safe animated dropdown (UNCHANGED)
   Widget _dropdownSection({
     required String title,
     required String value,
@@ -245,7 +298,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
             const SizedBox(height: 10),
-
             CustomDropdown<String>(
               hintText: "Select",
               items: items,
