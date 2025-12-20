@@ -35,27 +35,32 @@ class _CartScreenState extends State<CartScreen> {
         automaticallyImplyLeading: false,
         backgroundColor: bgColor,
         elevation: 0,
-        title: Stack(
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(
-                  Icons.arrow_back_ios_rounded,
-                  color: textColor,
-                  size: 20,
-                ),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: textColor,
+                size: 20,
               ),
             ),
-            Center(
-              child: Text(
-                "The Cart",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF0A4C8A),
-                  fontFamily: "Nano",
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsetsGeometry.fromLTRB(0, 0, 35, 0),
+                  child: Text(
+                    "The Cart",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF0A4C8A),
+                      fontFamily: "Nano",
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -122,7 +127,6 @@ class _CartScreenState extends State<CartScreen> {
                                         product["productStats"]!,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          // ignore: deprecated_member_use
                                           color: textColor?.withOpacity(0.6),
                                         ),
                                       ),
@@ -155,7 +159,6 @@ class _CartScreenState extends State<CartScreen> {
                                     ],
                                   ),
                                 ),
-
                                 IconButton(
                                   onPressed: () {
                                     setState(() {
@@ -176,7 +179,6 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ),
                 ),
-
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(

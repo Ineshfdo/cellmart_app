@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:cellmart_app/components/footer.dart';
 import 'package:cellmart_app/components/productCard.dart';
 import 'package:flutter/material.dart';
@@ -322,6 +323,26 @@ class _ProductsScreenState extends State<ProductsScreen> {
     _filterProducts();
   }
 
+  void _openProductDetails(Map<String, String> product) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (_, __, ___) => FadeInRight(
+          child: Scaffold(
+            appBar: AppBar(title: Text(product['name']!)),
+            body: Center(
+              child: Text(
+                product['description']!,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -346,12 +367,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
         title: Center(
           child: Container(
             margin: const EdgeInsets.fromLTRB(20, 15, 0, 15),
-            child: Text(
+            child: const Text(
               "Latest Products",
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFF0A4C8A),
+                color: Color(0xFF0A4C8A),
                 fontFamily: "Nano",
               ),
             ),
@@ -403,6 +424,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ),
             ),
 
+            // Search Field
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: TextField(
@@ -431,6 +453,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
             const SizedBox(height: 10),
 
+            // Product Grid with Animation
             _filteredProducts.isEmpty
                 ? Center(
                     child: Text(
@@ -458,15 +481,23 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     itemCount: _filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = _filteredProducts[index];
-                      return productCard(
-                        imagepath: product['imagepath']!,
-                        name: product['name']!,
-                        stats: product['stats']!,
-                        price: product['price']!,
-                        description: product['description']!,
+                      return FadeInUp(
+                        duration: const Duration(milliseconds: 400),
+                        delay: Duration(milliseconds: index * 80),
+                        child: GestureDetector(
+                          onTap: () => _openProductDetails(product),
+                          child: productCard(
+                            imagepath: product['imagepath']!,
+                            name: product['name']!,
+                            stats: product['stats']!,
+                            price: product['price']!,
+                            description: product['description']!,
+                          ),
+                        ),
                       );
                     },
                   ),
+
             Divider(),
             const Footer(),
           ],

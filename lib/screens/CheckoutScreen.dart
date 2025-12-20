@@ -1,5 +1,6 @@
 import 'package:cellmart_app/components/wrapper.dart';
 import 'package:flutter/material.dart';
+import 'package:quickalert/quickalert.dart';
 
 class CheckoutScreen extends StatelessWidget {
   final String address;
@@ -70,7 +71,6 @@ class CheckoutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Product list with card style
             Expanded(
               child: ListView.builder(
                 itemCount: items.length,
@@ -143,7 +143,6 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Pay on Delivery Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -155,20 +154,22 @@ class CheckoutScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        "Order placed successfully! Pay on Delivery.",
-                      ),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-
-                  // After confirming, navigate home
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Wrapper()),
-                    (route) => false,
+                  QuickAlert.show(
+                    context: context,
+                    type: QuickAlertType.success,
+                    title: 'Order Placed!',
+                    text:
+                        'Your order was placed successfully.\nPay on Delivery.',
+                    confirmBtnText: 'OK',
+                    onConfirmBtnTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Wrapper(),
+                        ),
+                        (route) => false,
+                      );
+                    },
                   );
                 },
                 child: const Text(

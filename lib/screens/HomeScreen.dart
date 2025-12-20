@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:cellmart_app/components/InfoSection.dart';
 import 'package:cellmart_app/components/footer.dart';
 import 'package:cellmart_app/components/productCard.dart';
@@ -169,24 +170,42 @@ class _HomescreenState extends State<Homescreen> {
 
   void _searchProducts(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _filteredProducts = List.from(products);
-      } else {
-        _filteredProducts = products
-            .where(
-              (product) =>
-                  product['name']!.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-      }
+      _filteredProducts = query.isEmpty
+          ? List.from(products)
+          : products
+                .where(
+                  (product) => product['name']!.toLowerCase().contains(
+                    query.toLowerCase(),
+                  ),
+                )
+                .toList();
     });
+  }
+
+  void _openProductDetails(Map<String, String> product) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (_, __, ___) => FadeInRight(
+          child: Scaffold(
+            appBar: AppBar(title: Text(product['name']!)),
+            body: Center(
+              child: Text(
+                product['description']!,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Determine number of columns based on screen width
     int crossAxisCount = 3;
     if (screenWidth >= 1200) {
       crossAxisCount = 8;
@@ -194,10 +213,8 @@ class _HomescreenState extends State<Homescreen> {
       crossAxisCount = 5;
     }
 
-    // Calculate childAspectRatio dynamically for spacing
     double childAspectRatio = (screenWidth / crossAxisCount) / 280;
 
-    // Use theme colors
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
     final inputFillColor = Theme.of(context).brightness == Brightness.dark
@@ -207,17 +224,14 @@ class _HomescreenState extends State<Homescreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(0, 15, 10, 0),
-            child: Text(
-              "CellMart",
-              style: TextStyle(
-                fontSize: 35,
-                fontWeight: FontWeight.w900,
-                color: const Color(0xFF0A4C8A),
-                fontFamily: "Nano",
-              ),
+        title: const Center(
+          child: Text(
+            "CellMart",
+            style: TextStyle(
+              fontSize: 35,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0A4C8A),
+              fontFamily: "Nano",
             ),
           ),
         ),
@@ -229,25 +243,19 @@ class _HomescreenState extends State<Homescreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 1),
-            SizedBox(height: 300, child: PhotoAnimation()),
-
+            const SizedBox(height: 300, child: PhotoAnimation()),
             const Divider(),
 
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(12),
               child: TextField(
                 controller: _searchController,
                 onChanged: _searchProducts,
-                style: TextStyle(color: textColor),
                 decoration: InputDecoration(
                   hintText: "Search for a product...",
-                  // ignore: deprecated_member_use
-                  hintStyle: TextStyle(color: textColor?.withOpacity(0.6)),
                   prefixIcon: Icon(Icons.search, color: textColor),
                   filled: true,
                   fillColor: inputFillColor,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
@@ -256,27 +264,17 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
 
-            const SizedBox(height: 10),
-
-            // Products Grid
             _filteredProducts.isEmpty
                 ? Center(
                     child: Text(
                       "No products found",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: textColor,
-                      ),
+                      style: TextStyle(color: textColor, fontSize: 18),
                     ),
                   )
                 : GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
+                    padding: const EdgeInsets.all(14),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
                       mainAxisSpacing: 20,
@@ -286,28 +284,34 @@ class _HomescreenState extends State<Homescreen> {
                     itemCount: _filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = _filteredProducts[index];
-                      return productCard(
-                        imagepath: product['imagepath']!,
-                        name: product['name']!,
-                        stats: product['stats']!,
-                        price: product['price']!,
-                        description: product['description']!,
+
+                      return FadeInUp(
+                        duration: const Duration(milliseconds: 400),
+                        delay: Duration(milliseconds: index * 80),
+                        child: GestureDetector(
+                          onTap: () => _openProductDetails(product),
+                          child: productCard(
+                            imagepath: product['imagepath']!,
+                            name: product['name']!,
+                            stats: product['stats']!,
+                            price: product['price']!,
+                            description: product['description']!,
+                          ),
+                        ),
                       );
                     },
                   ),
 
             const Divider(),
 
-            InfoSection(
+            const InfoSection(
               title: "Why You Chose CellMart",
               imagePath: "assets/images/allphones.webp",
-              content1:
-                  "At CellMart, we prioritize our customers above all. Whether you have a question about our products, need assistance with an order, or want to provide feedback, we are here to help.",
-              content2:
-                  "You can reach out to us via email, phone, or through our social media channels. We value communication and are always open to hearing from you.",
+              content1: "At CellMart, we prioritize our customers above all.",
+              content2: "Reach out via email, phone, or social media anytime.",
             ),
-            const Divider(),
 
+            const Divider(),
             const Footer(),
           ],
         ),

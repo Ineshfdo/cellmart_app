@@ -1,3 +1,4 @@
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:cellmart_app/components/footer.dart';
 import 'package:cellmart_app/screens/cartScreen.dart';
 import 'package:cellmart_app/components/cart_storage.dart';
@@ -29,38 +30,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final List<String> colorOptions = ["Black", "White", "Blue", "Red"];
+    final List<String> warrantyOptions = ["1 year", "3 years", "5 years"];
 
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
-          child: Icon(Icons.arrow_back_ios_rounded, size: 20, color: textColor),
           onTap: () => Navigator.pop(context),
+          child: Icon(Icons.arrow_back_ios_rounded, size: 20, color: textColor),
         ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              widget.name,
-              style: TextStyle(
-                fontSize: 20,
-                fontFamily: "Nano",
-                color: textColor,
-              ),
-            ),
-            const SizedBox(width: 58),
-          ],
-        ),
+        title: Text(widget.name, style: TextStyle(color: textColor)),
         backgroundColor: bgColor,
         elevation: 0,
       ),
+      backgroundColor: bgColor,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 7),
+            const SizedBox(height: 10),
+
+            /// Product Image
             Center(
               child: Image.asset(
                 widget.imagepath,
@@ -69,8 +63,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 fit: BoxFit.contain,
               ),
             ),
+
             const SizedBox(height: 16),
 
+            /// Product Name
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -83,8 +79,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
 
-            const SizedBox(height: 2),
-
+            /// Product Stats
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -96,8 +91,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
 
-            const SizedBox(height: 2),
-
+            /// Price
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
@@ -113,6 +107,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const SizedBox(height: 10),
             const Divider(),
 
+            /// 🔹 DESCRIPTION (KEPT)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 7, 3),
               child: Text(
@@ -127,7 +122,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 7, 5),
               child: Text(
-                '- ${widget.description}',
+                "- ${widget.description}",
                 style: TextStyle(
                   fontSize: 14,
                   color: textColor?.withOpacity(0.9),
@@ -136,126 +131,145 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
 
             const Divider(),
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
 
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(34),
-                color: isDark ? Colors.grey[850] : Colors.grey[200],
-              ),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      "Choose the color : ",
-                      style: TextStyle(fontSize: 16, color: textColor),
-                    ),
-                  ),
-                  DropdownButton<String>(
-                    value: color,
-                    dropdownColor: isDark ? Colors.grey[900] : Colors.white,
-                    style: TextStyle(color: textColor),
-                    items: ["Black", "White", "Blue", "Red"]
-                        .map(
-                          (item) =>
-                              DropdownMenuItem(value: item, child: Text(item)),
-                        )
-                        .toList(),
-                    onChanged: (value) => setState(() => color = value!),
-                  ),
-                ],
-              ),
+            /// 🎨 Color Dropdown
+            _dropdownSection(
+              title: "Choose the color",
+              value: color,
+              items: colorOptions,
+              isDark: isDark,
+              onChanged: (val) {
+                setState(() => color = val);
+              },
             ),
 
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 30, 16, 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(34),
-                color: isDark ? Colors.grey[850] : Colors.grey[200],
-              ),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      "Choose the warranty : ",
-                      style: TextStyle(fontSize: 16, color: textColor),
-                    ),
-                  ),
-                  DropdownButton<String>(
-                    value: warranty,
-                    dropdownColor: isDark ? Colors.grey[900] : Colors.white,
-                    style: TextStyle(color: textColor),
-                    items: ["1 year", "3 years", "5 years"]
-                        .map(
-                          (item) =>
-                              DropdownMenuItem(value: item, child: Text(item)),
-                        )
-                        .toList(),
-                    onChanged: (value) => setState(() => warranty = value!),
-                  ),
-                ],
-              ),
+            /// ⏳ Warranty Dropdown
+            _dropdownSection(
+              title: "Choose the warranty",
+              value: warranty,
+              items: warrantyOptions,
+              isDark: isDark,
+              onChanged: (val) {
+                setState(() => warranty = val);
+              },
             ),
 
             const SizedBox(height: 30),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final product = {
-                        "productName": widget.name,
-                        "productPrice": widget.price,
-                        "productStats": widget.stats,
-                        "productImage": widget.imagepath,
-                        "productColor": color,
-                        "productWarranty": warranty,
-                      };
+            /// Add to Cart Button
+            Center(
+              child: SizedBox(
+                width: 200,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final product = {
+                      "productName": widget.name,
+                      "productPrice": widget.price,
+                      "productStats": widget.stats,
+                      "productImage": widget.imagepath,
+                      "productColor": color,
+                      "productWarranty": warranty,
+                    };
 
-                      CartStorage.addItem(product);
+                    CartStorage.addItem(product);
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CartScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0A4C8A),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 55,
-                        vertical: 20,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CartScreen(),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A4C8A),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      "Add to Cart",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  child: const Text(
+                    "Add to Cart",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
 
             const SizedBox(height: 50),
-            Divider(),
+            const Divider(),
             const Footer(),
           ],
         ),
       ),
-      backgroundColor: bgColor,
+    );
+  }
+
+  /// 🔥 Dark-mode-safe animated dropdown
+  Widget _dropdownSection({
+    required String title,
+    required String value,
+    required List<String> items,
+    required bool isDark,
+    required Function(String) onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+            width: 1.2,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[700],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            CustomDropdown<String>(
+              hintText: "Select",
+              items: items,
+              initialItem: value,
+              onChanged: (val) => onChanged(val ?? value),
+              decoration: CustomDropdownDecoration(
+                closedFillColor: isDark
+                    ? const Color(0xFF2A2A2A)
+                    : Colors.white,
+                expandedFillColor: isDark
+                    ? const Color(0xFF2A2A2A)
+                    : Colors.white,
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+                headerStyle: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                listItemStyle: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                closedBorder: Border.all(
+                  color: isDark ? Colors.grey.shade700 : Colors.grey.shade400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

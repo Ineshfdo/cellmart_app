@@ -16,7 +16,6 @@ class Wrapper extends StatefulWidget {
 
 class _WrapperState extends State<Wrapper> {
   int selectedItem = 0;
-
   late final List<Widget> screens;
 
   @override
@@ -30,6 +29,50 @@ class _WrapperState extends State<Wrapper> {
     ];
   }
 
+  // 🔐 LOGIN & SIGNUP → SLIDE FROM LEFT
+  void slideFromLeftNavigate(Widget page) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 450),
+        pageBuilder: (_, animation, __) => page,
+        transitionsBuilder: (_, animation, __, child) {
+          final tween = Tween<Offset>(
+            begin: const Offset(-1.0, 0.0),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeOutCubic));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
+  // 🛒 CART → SLIDE FROM RIGHT
+  void slideFromRightNavigate(Widget page) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 450),
+        pageBuilder: (_, animation, __) => page,
+        transitionsBuilder: (_, animation, __, child) {
+          final tween = Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeOutCubic));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -40,16 +83,12 @@ class _WrapperState extends State<Wrapper> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // 🔐 LOGIN & SIGN UP
             Row(
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
+                    slideFromLeftNavigate(const LoginScreen());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? Colors.white : Colors.black,
@@ -64,12 +103,7 @@ class _WrapperState extends State<Wrapper> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SignupScreen(),
-                      ),
-                    );
+                    slideFromLeftNavigate(const SignupScreen());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? Colors.white : Colors.black,
@@ -84,6 +118,7 @@ class _WrapperState extends State<Wrapper> {
               ],
             ),
 
+            // 🛒 CART
             Row(
               children: [
                 ElevatedButton(
@@ -93,12 +128,7 @@ class _WrapperState extends State<Wrapper> {
                     backgroundColor: const Color.fromARGB(255, 0, 88, 139),
                   ),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CartScreen(),
-                      ),
-                    );
+                    slideFromRightNavigate(const CartScreen());
                   },
                   child: const Icon(
                     Icons.shopping_cart,
@@ -126,7 +156,6 @@ class _WrapperState extends State<Wrapper> {
             icon: Icon(Icons.inventory_2_outlined),
             label: 'Products',
           ),
-
           BottomNavigationBarItem(
             icon: Icon(Icons.email_outlined),
             label: 'Contact Us',
