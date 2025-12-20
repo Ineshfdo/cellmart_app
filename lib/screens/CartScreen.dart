@@ -43,7 +43,7 @@ class _CartScreenState extends State<CartScreen> {
               constraints: const BoxConstraints(),
               onPressed: () => Navigator.pop(context),
               icon: Icon(
-                Icons.arrow_forward_ios_rounded,
+                Icons.arrow_back_ios_rounded,
                 color: textColor,
                 size: 20,
               ),

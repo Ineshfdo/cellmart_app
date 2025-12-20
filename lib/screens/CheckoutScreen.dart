@@ -17,6 +17,8 @@ class CheckoutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textColor = theme.textTheme.bodyLarge?.color;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -43,6 +45,7 @@ class CheckoutScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// ---------------- ADDRESS ----------------
             Text(
               "Delivery Address:",
               style: theme.textTheme.titleMedium?.copyWith(
@@ -53,9 +56,7 @@ class CheckoutScreen extends StatelessWidget {
               margin: const EdgeInsets.symmetric(vertical: 10),
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: theme.brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : const Color.fromARGB(248, 236, 234, 234),
+                color: isDark ? Colors.grey[800] : Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(address, style: theme.textTheme.bodyMedium),
@@ -63,6 +64,7 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 10),
 
+            /// ---------------- ORDER SUMMARY ----------------
             Text(
               "Order Summary:",
               style: theme.textTheme.titleMedium?.copyWith(
@@ -71,47 +73,92 @@ class CheckoutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
+            /// ---------------- PRODUCT LIST ----------------
             Expanded(
               child: ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final product = items[index];
+
                   return Card(
                     elevation: 0,
-                    margin: const EdgeInsets.only(bottom: 12),
+                    margin: const EdgeInsets.only(bottom: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(21),
-                        color: theme.brightness == Brightness.dark
-                            ? Colors.grey[850]
-                            : const Color.fromARGB(248, 236, 234, 234),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                product["productName"]!,
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.grey[850] : Colors.grey[200],
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          /// IMAGE
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              product["productImage"]!,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+
+                          const SizedBox(width: 20),
+
+                          /// DETAILS
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product["productName"]!,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 5),
+
+                                Text(
+                                  product["productStats"]!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: textColor?.withOpacity(0.6),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+
+                                Text(
+                                  product["productPrice"]!,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0A4C8A),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+
+                                Text(
+                                  "Color: ${product["productColor"]!}",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: textColor,
+                                  ),
+                                ),
+
+                                Text(
+                                  "Warranty: ${product["productWarranty"]!}",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              product["productPrice"]!,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0A4C8A),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -121,6 +168,7 @@ class CheckoutScreen extends StatelessWidget {
 
             const Divider(thickness: 1),
 
+            /// ---------------- TOTAL ----------------
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -143,6 +191,7 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
+            /// ---------------- PLACE ORDER ----------------
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

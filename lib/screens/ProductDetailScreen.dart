@@ -43,7 +43,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           onTap: () => Navigator.pop(context),
           child: Icon(Icons.arrow_back_ios_rounded, size: 20, color: textColor),
         ),
-        title: Text(widget.name, style: TextStyle(color: textColor)),
+        centerTitle: true,
+        title: Text(
+          widget.name,
+          style: TextStyle(color: textColor),
+          textAlign: TextAlign.center,
+        ),
         backgroundColor: bgColor,
         elevation: 0,
       ),
