@@ -1,8 +1,11 @@
 // ignore_for_file: unused_local_variable, duplicate_ignore
+import 'dart:io';
 import 'package:cellmart_app/components/InfoSection.dart';
 import 'package:cellmart_app/components/MainInfoSection.dart';
 import 'package:cellmart_app/components/footer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -12,6 +15,7 @@ class ContactUsScreen extends StatefulWidget {
 }
 
 class _ContactUsScreenState extends State<ContactUsScreen> {
+  // Form Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
@@ -21,6 +25,138 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   bool _acceptTerms = false;
   double _urgency = 2;
 
+  // Image Picker Logic
+  final ImagePicker _picker = ImagePicker();
+  XFile? _selectedImage;
+
+  bool get _canPickImage {
+    if (kIsWeb) return false;
+    return defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    if (!_canPickImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Image picker not supported on this platform."),
+        ),
+      );
+      return;
+    }
+
+    final image = await _picker.pickImage(source: source);
+    if (image != null && mounted) {
+      setState(() => _selectedImage = image);
+    }
+  }
+
+  void _submitForm() {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (name.isEmpty || email.isEmpty || !_acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please fill in your name, email, and accept terms."),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Thank you, $name! We will respond to $email.")),
+    );
+
+    _nameController.clear();
+    _emailController.clear();
+    _subjectController.clear();
+    _messageController.clear();
+
+    setState(() {
+      _selectedImage = null;
+      _topic = 'General Inquiry';
+      _acceptTerms = false;
+      _urgency = 2;
+    });
+  }
+
+  InputDecoration _inputDecoration(String hint, bool isDark) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+    );
+  }
+
+  Widget _imagePickerUI(bool isDark, Color? textColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Text(
+          "Attach Image (optional)",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => _pickImage(ImageSource.camera),
+              icon: const Icon(Icons.camera_alt),
+              label: const Text("Camera"),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => _pickImage(ImageSource.gallery),
+              icon: const Icon(Icons.photo_library),
+              label: const Text("Gallery"),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (_selectedImage != null) ...[
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.file(
+              File(_selectedImage!.path),
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -29,7 +165,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     final bgColor = theme.scaffoldBackgroundColor;
 
     final size = MediaQuery.of(context).size;
-    final isDesktop = size.width >= 800;
+    final isDesktop = size.width >= 900;
     final isLandscape = size.width > size.height;
 
     final contactCards = [
@@ -50,7 +186,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ? Colors.grey[850]
             : const Color.fromARGB(255, 233, 233, 233),
         child: const ListTile(
-          leading: Icon(Icons.phone, color: Color.fromARGB(255, 0, 0, 0)),
+          leading: Icon(Icons.phone, color: Colors.black),
           title: Text("Phone Number"),
           subtitle: Text("075-869-0018"),
         ),
@@ -61,10 +197,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ? Colors.grey[850]
             : const Color.fromARGB(255, 233, 233, 233),
         child: const ListTile(
-          leading: Icon(
-            Icons.video_library,
-            color: Color.fromARGB(255, 236, 59, 59),
-          ),
+          leading: Icon(Icons.video_library, color: Colors.red),
           title: Text("YouTube Channel"),
           subtitle: Text("CellMart2.0"),
         ),
@@ -82,381 +215,17 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       ),
     ];
 
-    Widget buildFormFields() {
-      if (isDesktop || isLandscape) {
-        // Desktop Layout
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      hintText: "Your Name",
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      hintText: "Your Email",
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _subjectController,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      hintText: "Subject",
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    value: _topic,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'General Inquiry',
-                        child: Text('General Inquiry'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Feedback',
-                        child: Text('Feedback'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Support',
-                        child: Text('Support'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _topic = value!;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: "Topic",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                    dropdownColor: bgColor,
-                    style: TextStyle(color: textColor),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _messageController,
-                    maxLines: 12,
-                    style: TextStyle(color: textColor),
-                    decoration: InputDecoration(
-                      hintText: "Your Message",
-                      hintStyle: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Message Urgency",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                      ),
-                      Slider(
-                        value: _urgency,
-                        min: 1,
-                        max: 10,
-                        divisions: 9,
-                        label: _urgency.round().toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            _urgency = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  CheckboxListTile(
-                    title: Text(
-                      "I accept the terms and conditions",
-                      style: TextStyle(color: textColor),
-                    ),
-                    value: _acceptTerms,
-                    onChanged: (value) {
-                      setState(() {
-                        _acceptTerms = value!;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0A4C8A),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        "Send Message",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      }
-
-      // Mobile Layout
-      return Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _nameController,
-                  style: TextStyle(color: textColor),
-                  decoration: InputDecoration(
-                    hintText: "Your Name",
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: textColor),
-                  decoration: InputDecoration(
-                    hintText: "Your Email",
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _subjectController,
-            style: TextStyle(color: textColor),
-            decoration: InputDecoration(
-              hintText: "Subject",
-              hintStyle: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          DropdownButtonFormField<String>(
-            value: _topic,
-            items: const [
-              DropdownMenuItem(
-                value: 'General Inquiry',
-                child: Text('General Inquiry'),
-              ),
-              DropdownMenuItem(value: 'Feedback', child: Text('Feedback')),
-              DropdownMenuItem(value: 'Support', child: Text('Support')),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _topic = value!;
-              });
-            },
-            decoration: InputDecoration(
-              labelText: "Topic",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-            ),
-            dropdownColor: bgColor,
-            style: TextStyle(color: textColor),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _messageController,
-            maxLines: 6,
-            style: TextStyle(color: textColor),
-            decoration: InputDecoration(
-              hintText: "Your Message",
-              hintStyle: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Message Urgency",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
-                ),
-              ),
-              Slider(
-                value: _urgency,
-                min: 1,
-                max: 10,
-                divisions: 9,
-                label: _urgency.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    _urgency = value;
-                  });
-                },
-              ),
-            ],
-          ),
-          CheckboxListTile(
-            title: Text(
-              "I accept the terms and conditions",
-              style: TextStyle(color: textColor),
-            ),
-            value: _acceptTerms,
-            onChanged: (value) {
-              setState(() {
-                _acceptTerms = value!;
-              });
-            },
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _submitForm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0A4C8A),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                "Send Message",
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(20, 15, 0, 15),
-            child: const Text(
-              "Contact CellMart",
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF0A4C8A),
-                fontFamily: "Nano",
-              ),
+        title: const Center(
+          child: Text(
+            "Contact CellMart",
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0A4C8A),
+              fontFamily: "Nano",
             ),
           ),
         ),
@@ -467,17 +236,20 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+
             MainInfoSection(
               imagePath: "assets/images/store12.jpg",
               content1:
-                  "At CellMart, we prioritize our customers above all. Whether you have a question about our products, need assistance with an order, or want to provide feedback, we are here to help. Our dedicated support team is committed to ensuring your experience with CellMart is smooth, efficient, and enjoyable.",
+                  "At CellMart, we prioritize our customers above all. Whether you have a question about our products, need assistance with an order, or want to provide feedback, we are here to help.",
               content2:
-                  "You can reach out to us via email, phone, or through our social media channels. We value communication and are always open to hearing from you to improve our services and product offerings.",
+                  "You can reach out to us via email, phone, or through our social media channels. We value communication and are always open to hearing from you.",
             ),
+
             Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
 
+            // CONTACT DETAILS SECTION
             Padding(
-              padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
+              padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -509,87 +281,322 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 ],
               ),
             ),
+
+            Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+
+            // CONTACT FORM SECTION
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 30,
+                ),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey.shade900 : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 25,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        "Get In Touch",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0A4C8A),
+                          fontFamily: "Nano",
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    // Responsive Form Fields
+                    if (isDesktop)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                TextField(
+                                  controller: _nameController,
+                                  decoration: _inputDecoration(
+                                    "Your Name",
+                                    isDark,
+                                  ),
+                                  style: TextStyle(color: textColor),
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: _inputDecoration(
+                                    "Your Email",
+                                    isDark,
+                                  ),
+                                  style: TextStyle(color: textColor),
+                                ),
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: _subjectController,
+                                  decoration: _inputDecoration(
+                                    "Subject",
+                                    isDark,
+                                  ),
+                                  style: TextStyle(color: textColor),
+                                ),
+                                const SizedBox(height: 16),
+                                DropdownButtonFormField<String>(
+                                  value: _topic,
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'General Inquiry',
+                                      child: Text('General Inquiry'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'Feedback',
+                                      child: Text('Feedback'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'Support',
+                                      child: Text('Support'),
+                                    ),
+                                  ],
+                                  onChanged: (value) =>
+                                      setState(() => _topic = value!),
+                                  decoration: _inputDecoration("Topic", isDark),
+                                  dropdownColor: isDark
+                                      ? Colors.grey.shade900
+                                      : Colors.white,
+                                  style: TextStyle(color: textColor),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                TextField(
+                                  controller: _messageController,
+                                  maxLines: 10,
+                                  decoration: _inputDecoration(
+                                    "Your Message",
+                                    isDark,
+                                  ),
+                                  style: TextStyle(color: textColor),
+                                ),
+                                _imagePickerUI(isDark, textColor),
+                                const SizedBox(height: 20),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "Urgency Level",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ),
+                                Slider(
+                                  value: _urgency,
+                                  min: 1,
+                                  max: 10,
+                                  divisions: 9,
+                                  label: _urgency.round().toString(),
+                                  onChanged: (value) =>
+                                      setState(() => _urgency = value),
+                                ),
+                                CheckboxListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    "I accept the terms and conditions",
+                                    style: TextStyle(color: textColor),
+                                  ),
+                                  value: _acceptTerms,
+                                  onChanged: (value) =>
+                                      setState(() => _acceptTerms = value!),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: _submitForm,
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 6,
+                                      backgroundColor: const Color(0xFF0A4C8A),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 18,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      "Send Message",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        children: [
+                          TextField(
+                            controller: _nameController,
+                            decoration: _inputDecoration("Your Name", isDark),
+                            style: TextStyle(color: textColor),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: _inputDecoration("Your Email", isDark),
+                            style: TextStyle(color: textColor),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _subjectController,
+                            decoration: _inputDecoration("Subject", isDark),
+                            style: TextStyle(color: textColor),
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<String>(
+                            value: _topic,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'General Inquiry',
+                                child: Text('General Inquiry'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Feedback',
+                                child: Text('Feedback'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Support',
+                                child: Text('Support'),
+                              ),
+                            ],
+                            onChanged: (value) =>
+                                setState(() => _topic = value!),
+                            decoration: _inputDecoration("Topic", isDark),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _messageController,
+                            maxLines: 6,
+                            decoration: _inputDecoration(
+                              "Your Message",
+                              isDark,
+                            ),
+                            style: TextStyle(color: textColor),
+                          ),
+                          _imagePickerUI(isDark, textColor),
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Urgency Level",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                          Slider(
+                            value: _urgency,
+                            min: 1,
+                            max: 10,
+                            divisions: 9,
+                            label: _urgency.round().toString(),
+                            onChanged: (value) =>
+                                setState(() => _urgency = value),
+                          ),
+                          CheckboxListTile(
+                            title: Text(
+                              "I accept the terms and conditions",
+                              style: TextStyle(color: textColor),
+                            ),
+                            value: _acceptTerms,
+                            onChanged: (value) =>
+                                setState(() => _acceptTerms = value!),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _submitForm,
+                              style: ElevatedButton.styleFrom(
+                                elevation: 6,
+                                backgroundColor: const Color(0xFF0A4C8A),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Text(
+                                "Send Message",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
             Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
 
             InfoSection(
               title: "Customer Care Promise",
               imagePath: "assets/images/pro1.png",
               content1:
-                  "At CellMart, we don’t just provide products—we create meaningful relationships with our customers. Every interaction is an opportunity to deliver support, guidance, and care. We believe that customer service should be more than solving problems; it should be about making every experience with us seamless, stress-free, and enjoyable.",
+                  "At CellMart, we don’t just provide products—we create meaningful relationships with our customers.",
               content2:
-                  "No matter how simple or complex your concern, we want you to feel valued and heard. Our team is trained to offer patient, friendly, and professional assistance at every stage of your journey. By choosing CellMart, you are choosing a partner that is dedicated to walking beside you every step of the way.",
-            ),
-            Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
-
-            Container(
-              margin: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Get In Touch",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF0A4C8A),
-                      fontFamily: "Nano",
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  buildFormFields(),
-                ],
-              ),
+                  "Our team is trained to offer patient, friendly, and professional assistance at every stage of your journey.",
             ),
 
-            const SizedBox(height: 20),
             Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
 
             InfoSection(
               title: "After-Sales Support",
               imagePath: "assets/images/after.jpg",
               content1:
-                  "Our commitment to you extends beyond your purchase. At CellMart, we provide reliable after-sales support to ensure you enjoy lasting satisfaction with your products. From troubleshooting and warranty guidance to technical advice, our dedicated team is here to provide the assistance you need, long after your order has been delivered.",
+                  "Our commitment to you extends beyond your purchase. We provide reliable after-sales support.",
               content2:
-                  "We understand that peace of mind comes from knowing support is always available. That’s why we strive to make after-sales service efficient, accessible, and dependable. With CellMart, you are never left alone—we stand firmly by our promise to ensure you receive help whenever you need it most.",
+                  "With CellMart, you are never left alone—we stand firmly by our promise to support you.",
             ),
-            Divider(),
+
+            Divider(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+
             const Footer(),
           ],
         ),
       ),
       backgroundColor: bgColor,
     );
-  }
-
-  void _submitForm() {
-    final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
-
-    if (name.isEmpty || email.isEmpty || !_acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please fill in your name, email, and accept terms."),
-        ),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          "Thank you, $name! We will respond to $email. Urgency level: ${_urgency.round()}",
-        ),
-      ),
-    );
-
-    _nameController.clear();
-    _emailController.clear();
-    _subjectController.clear();
-    _messageController.clear();
-    setState(() {
-      _topic = 'General Inquiry';
-      _acceptTerms = false;
-      _urgency = 2;
-    });
   }
 }
