@@ -1,8 +1,9 @@
 import 'package:cellmart_app/components/wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:battery_plus/battery_plus.dart';
 
-class CheckoutScreen extends StatelessWidget {
+class CheckoutScreen extends StatefulWidget {
   final String address;
   final double total;
   final List<Map<String, String>> items;
@@ -13,6 +14,44 @@ class CheckoutScreen extends StatelessWidget {
     required this.total,
     required this.items,
   });
+
+  @override
+  State<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends State<CheckoutScreen> {
+  final Battery _battery = Battery();
+
+  Future<void> _placeOrder(BuildContext context) async {
+    final int batteryLevel = await _battery.batteryLevel;
+
+    if (batteryLevel <= 20) {
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        title: 'Low Battery',
+        text:
+            'Your battery level is too low ($batteryLevel%).\nPlease charge your device before placing the order.',
+        confirmBtnText: 'OK',
+      );
+      return;
+    }
+
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.success,
+      title: 'Order Placed!',
+      text: 'Your order was placed successfully.\nPay on Delivery.',
+      confirmBtnText: 'OK',
+      onConfirmBtnTap: () {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const Wrapper()),
+          (route) => false,
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +84,6 @@ class CheckoutScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// ---------------- ADDRESS ----------------
             Text(
               "Delivery Address:",
               style: theme.textTheme.titleMedium?.copyWith(
@@ -59,12 +97,11 @@ class CheckoutScreen extends StatelessWidget {
                 color: isDark ? Colors.grey[800] : Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(address, style: theme.textTheme.bodyMedium),
+              child: Text(widget.address, style: theme.textTheme.bodyMedium),
             ),
 
             const SizedBox(height: 10),
 
-            /// ---------------- ORDER SUMMARY ----------------
             Text(
               "Order Summary:",
               style: theme.textTheme.titleMedium?.copyWith(
@@ -73,12 +110,11 @@ class CheckoutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            /// ---------------- PRODUCT LIST ----------------
             Expanded(
               child: ListView.builder(
-                itemCount: items.length,
+                itemCount: widget.items.length,
                 itemBuilder: (context, index) {
-                  final product = items[index];
+                  final product = widget.items[index];
 
                   return Card(
                     elevation: 0,
@@ -91,7 +127,6 @@ class CheckoutScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(20),
                       child: Row(
                         children: [
-                          /// IMAGE
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.asset(
@@ -104,7 +139,6 @@ class CheckoutScreen extends StatelessWidget {
 
                           const SizedBox(width: 20),
 
-                          /// DETAILS
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +202,6 @@ class CheckoutScreen extends StatelessWidget {
 
             const Divider(thickness: 1),
 
-            /// ---------------- TOTAL ----------------
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -179,7 +212,7 @@ class CheckoutScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "Rs ${total.toStringAsFixed(2)}",
+                  "Rs ${widget.total.toStringAsFixed(2)}",
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
@@ -191,7 +224,6 @@ class CheckoutScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            /// ---------------- PLACE ORDER ----------------
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -202,25 +234,7 @@ class CheckoutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {
-                  QuickAlert.show(
-                    context: context,
-                    type: QuickAlertType.success,
-                    title: 'Order Placed!',
-                    text:
-                        'Your order was placed successfully.\nPay on Delivery.',
-                    confirmBtnText: 'OK',
-                    onConfirmBtnTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Wrapper(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                  );
-                },
+                onPressed: () => _placeOrder(context),
                 child: const Text(
                   "Place The Order",
                   style: TextStyle(
