@@ -1,6 +1,8 @@
 import 'package:cellmart_app/screens/CheckoutScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:cellmart_app/components/cart_storage.dart';
+import 'package:geolocator/geolocator.dart'; // Add this
+import 'package:geocoding/geocoding.dart'; // Add this
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -11,6 +13,61 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _addressController = TextEditingController();
+  bool _isFetchingLocation = false; // To show a loading state
+
+  // --- Location Logic ---
+  Future<void> _getCurrentLocation() async {
+    setState(() => _isFetchingLocation = true);
+
+    try {
+      // 1. Check if services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw 'Location services are disabled.';
+      }
+
+      // 2. Check/Request permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw 'Location permissions are denied';
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permissions are permanently denied.';
+      }
+
+      // 3. Get Coordinates
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // 4. Convert Coordinates to Address (Reverse Geocoding)
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        // Construct a readable string
+        String address =
+            "${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}";
+
+        setState(() {
+          _addressController.text = address;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() => _isFetchingLocation = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +108,7 @@ class _CartScreenState extends State<CartScreen> {
             Expanded(
               child: Center(
                 child: Padding(
-                  padding: EdgeInsetsGeometry.fromLTRB(0, 0, 35, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 35, 0),
                   child: Text(
                     "The Cart",
                     style: TextStyle(
@@ -202,6 +259,26 @@ class _CartScreenState extends State<CartScreen> {
                           fillColor: isDark
                               ? Colors.grey[850]
                               : Colors.grey[100],
+                          // Adding the Location Button inside the TextField
+                          suffixIcon: _isFetchingLocation
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : IconButton(
+                                  icon: const Icon(
+                                    Icons.my_location,
+                                    color: Colors.blue,
+                                  ),
+                                  onPressed: _getCurrentLocation,
+                                  tooltip: "Get current location",
+                                ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -256,8 +333,6 @@ class _CartScreenState extends State<CartScreen> {
                           final itemsCopy = List<Map<String, String>>.from(
                             cartItems,
                           );
-
-                          // Clear cart after copying
                           CartStorage.cartItems.clear();
 
                           Navigator.pushReplacement(
