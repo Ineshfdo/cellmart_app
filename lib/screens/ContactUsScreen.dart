@@ -6,6 +6,9 @@ import 'package:cellmart_app/components/footer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+// New Imports
+import 'package:animated_custom_dropdown/custom_dropdown.dart';
+import 'package:quickalert/quickalert.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -21,6 +24,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
+  final List<String> _topicList = ['General Inquiry', 'Feedback', 'Support'];
   String _topic = 'General Inquiry';
   bool _acceptTerms = false;
   double _urgency = 2;
@@ -56,18 +60,30 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     final email = _emailController.text.trim();
 
     if (name.isEmpty || email.isEmpty || !_acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please fill in your name, email, and accept terms."),
-        ),
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        title: 'Oops...',
+        text: 'Please fill in your name, email, and accept terms.',
+        confirmBtnColor: const Color(0xFF0A4C8A),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Thank you, $name! We will respond to $email.")),
+    // Success Message using QuickAlert
+    QuickAlert.show(
+      context: context,
+      type: QuickAlertType.success,
+      text: "Thank you, $name! We will respond to $email.",
+      confirmBtnColor: const Color(0xFF0A4C8A),
+      onConfirmBtnTap: () {
+        Navigator.pop(context);
+        _clearForm();
+      },
     );
+  }
 
+  void _clearForm() {
     _nameController.clear();
     _emailController.clear();
     _subjectController.clear();
@@ -355,29 +371,29 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                                   style: TextStyle(color: textColor),
                                 ),
                                 const SizedBox(height: 16),
-                                DropdownButtonFormField<String>(
-                                  value: _topic,
-                                  items: const [
-                                    DropdownMenuItem(
-                                      value: 'General Inquiry',
-                                      child: Text('General Inquiry'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'Feedback',
-                                      child: Text('Feedback'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'Support',
-                                      child: Text('Support'),
-                                    ),
-                                  ],
+                                // Animated Custom Dropdown for Desktop
+                                CustomDropdown<String>(
+                                  hintText: 'Select Topic',
+                                  items: _topicList,
+                                  initialItem: _topic,
                                   onChanged: (value) =>
                                       setState(() => _topic = value!),
-                                  decoration: _inputDecoration("Topic", isDark),
-                                  dropdownColor: isDark
-                                      ? Colors.grey.shade900
-                                      : Colors.white,
-                                  style: TextStyle(color: textColor),
+                                  decoration: CustomDropdownDecoration(
+                                    closedFillColor: isDark
+                                        ? Colors.grey.shade800
+                                        : Colors.grey.shade100,
+                                    expandedFillColor: isDark
+                                        ? Colors.grey.shade900
+                                        : Colors.white,
+                                    closedBorderRadius: BorderRadius.circular(
+                                      14,
+                                    ),
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    headerStyle: TextStyle(color: textColor),
+                                    listItemStyle: TextStyle(color: textColor),
+                                  ),
                                 ),
                               ],
                             ),
@@ -477,25 +493,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             style: TextStyle(color: textColor),
                           ),
                           const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            value: _topic,
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'General Inquiry',
-                                child: Text('General Inquiry'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Feedback',
-                                child: Text('Feedback'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Support',
-                                child: Text('Support'),
-                              ),
-                            ],
+                          // Animated Custom Dropdown for Mobile
+                          CustomDropdown<String>(
+                            hintText: 'Select Topic',
+                            items: _topicList,
+                            initialItem: _topic,
                             onChanged: (value) =>
                                 setState(() => _topic = value!),
-                            decoration: _inputDecoration("Topic", isDark),
+                            decoration: CustomDropdownDecoration(
+                              closedFillColor: isDark
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade100,
+                              expandedFillColor: isDark
+                                  ? Colors.grey.shade900
+                                  : Colors.white,
+                              closedBorderRadius: BorderRadius.circular(14),
+                              hintStyle: TextStyle(color: Colors.grey.shade600),
+                              headerStyle: TextStyle(color: textColor),
+                              listItemStyle: TextStyle(color: textColor),
+                            ),
                           ),
                           const SizedBox(height: 16),
                           TextField(
