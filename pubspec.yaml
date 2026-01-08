@@ -124,6 +124,61 @@ flutter:
     - assets/images/store12.jpg
     - assets/images/pro1.png
     - assets/images/after.jpg
+    - Images/3in1.webp
+    - Images/8-pro.jpg
+    - Images/8.jpg
+    - Images/9-pro.jpg
+    - Images/9.jpg
+    - Images/10-pro.jpg
+    - Images/12.jpg
+    - Images/13.jpg
+    - Images/14-pro.jpg
+    - Images/15.jpg
+    - Images/15pro.webp
+    - Images/15promax.jpg
+    - Images/16-pro-max.jpg
+    - Images/16.jpg
+    - Images/16pro.webp
+    - Images/16promax.webp
+    - Images/17-air.jpg
+    - Images/17-pro-max.jpg
+    - Images/17-pro.jpg
+    - Images/a04s.png
+    - Images/a15.jpg
+    - Images/a25.jpg
+    - Images/a35.jpg
+    - Images/a55.jpg
+    - Images/a75.webp
+    - Images/acharger.webp
+    - Images/airpods3.png
+    - Images/airpodspro.png
+    - Images/anker.webp
+    - Images/bcarcharger.jpg
+    - Images/buds2pro.png
+    - Images/n-1.jpg
+    - Images/n-2.jpg
+    - Images/n-3.webp
+    - Images/no-image.png
+    - Images/nothingear2.jpg
+    - Images/nothingheadphones.jpg
+    - Images/o-11.jpg
+    - Images/o-12.jpg
+    - Images/s23-ultra.jpg
+    - Images/s23.webp
+    - Images/s24-ultra.jpg
+    - Images/s24.jpg
+    - Images/s25-edge.webp
+    - Images/s25-ultra.jpg
+    - Images/s25.jpg
+    - Images/scharger.jpg
+    - Images/ugreen.jpg
+    - Images/xm5.webp
+    - Images/zflip4.jpg
+    - Images/zflip5.jpg
+    - Images/zflip6.avif
+    - Images/zfold4.png
+    - Images/zfold5.jpg
+    - Images/zfold6.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

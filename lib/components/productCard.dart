@@ -1,21 +1,11 @@
 import 'package:cellmart_app/screens/ProductDetailScreen.dart';
 import 'package:flutter/material.dart';
+import '../models/product.dart';
 
 class productCard extends StatefulWidget {
-  final String imagepath;
-  final String name;
-  final String stats;
-  final String price;
-  final String description;
+  final Product product;
 
-  const productCard({
-    super.key,
-    required this.imagepath,
-    required this.name,
-    required this.stats,
-    required this.price,
-    required this.description,
-  });
+  const productCard({super.key, required this.product});
 
   @override
   State<productCard> createState() => _productCardState();
@@ -62,19 +52,18 @@ class _productCardState extends State<productCard>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductDetailScreen(
-          imagepath: widget.imagepath,
-          name: widget.name,
-          stats: widget.stats,
-          price: widget.price,
-          description: widget.description,
-        ),
+        builder: (context) => ProductDetailScreen(product: widget.product),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    String displayStats = "";
+    if (widget.product.ram != null && widget.product.storage != null) {
+      displayStats = "${widget.product.ram} - ${widget.product.storage}";
+    }
+
     return GestureDetector(
       onTap: () => _onTap(context),
       child: AnimatedBuilder(
@@ -89,25 +78,41 @@ class _productCardState extends State<productCard>
           margin: const EdgeInsets.fromLTRB(5, 0, 0, 0),
           child: Column(
             children: [
-              Image.asset(widget.imagepath, width: 120, fit: BoxFit.contain),
+              Hero(
+                tag: 'product_image_${widget.product.id}',
+                child: Image.asset(
+                  widget.product.image.startsWith('Images/')
+                      ? widget.product.image
+                      : 'Images/${widget.product.image}',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.image, size: 80, color: Colors.grey),
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
-                widget.name,
+                widget.product.name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 14,
                 ),
               ),
-              Text(
-                widget.stats,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                  color: Colors.grey,
+              if (displayStats.isNotEmpty)
+                Text(
+                  displayStats,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
               Text(
-                widget.price,
+                "${widget.product.currency} ${widget.product.price}",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,

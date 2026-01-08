@@ -9,21 +9,15 @@ import 'package:cellmart_app/db/favorites_db.dart';
 import 'package:cellmart_app/models/favorite_product.dart';
 import 'package:cellmart_app/screens/FavoritesScreen.dart';
 
-class ProductDetailScreen extends StatefulWidget {
-  final String imagepath;
-  final String name;
-  final String stats;
-  final String price;
-  final String description;
+import '../models/product.dart';
+import '../services/auth_service.dart';
 
-  const ProductDetailScreen({
-    super.key,
-    required this.imagepath,
-    required this.name,
-    required this.stats,
-    required this.price,
-    required this.description,
-  });
+import 'loginScreen.dart';
+
+class ProductDetailScreen extends StatefulWidget {
+  final Product product;
+
+  const ProductDetailScreen({super.key, required this.product});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -42,6 +36,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final List<String> colorOptions = ["Black", "White", "Blue", "Red"];
     final List<String> warrantyOptions = ["1 year", "3 years", "5 years"];
 
+    // Construct stats string if not present, or use what we have
+    // The API product has 'ram', 'storage'. The old UI used 'stats' like "8GB - 256GB"
+    String displayStats = "";
+    if (widget.product.ram != null && widget.product.storage != null) {
+      displayStats = "${widget.product.ram} - ${widget.product.storage}";
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
@@ -50,7 +51,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         centerTitle: true,
         title: Text(
-          widget.name,
+          widget.product.name,
           style: TextStyle(color: textColor),
           textAlign: TextAlign.center,
         ),
@@ -66,11 +67,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             /// Product Image
             Center(
-              child: Image.asset(
-                widget.imagepath,
-                width: 200,
-                height: 200,
-                fit: BoxFit.contain,
+              child: Hero(
+                tag: 'product_image_${widget.product.id}',
+                child: Image.asset(
+                  widget.product.image.startsWith('Images/')
+                      ? widget.product.image
+                      : 'Images/${widget.product.image}',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.image, size: 100, color: Colors.grey),
+                ),
               ),
             ),
 
@@ -80,7 +88,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                widget.name,
+                widget.product.name,
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -90,22 +98,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
 
             /// Product Stats
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                widget.stats,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: textColor?.withOpacity(0.6),
+            if (displayStats.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  displayStats,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: textColor?.withOpacity(0.6),
+                  ),
                 ),
               ),
-            ),
 
             /// Price
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                widget.price,
+                "${widget.product.currency} ${widget.product.price}",
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -132,7 +141,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 7, 5),
               child: Text(
-                "- ${widget.description}",
+                "- ${widget.product.description}",
                 style: TextStyle(
                   fontSize: 14,
                   color: textColor?.withOpacity(0.9),
@@ -176,16 +185,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   width: 160,
                   child: ElevatedButton(
                     onPressed: () {
-                      final product = {
-                        "productName": widget.name,
-                        "productPrice": widget.price,
-                        "productStats": widget.stats,
-                        "productImage": widget.imagepath,
+                      if (!AuthService.isLoggedIn) {
+                        // Prompt login
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please login to add items to cart"),
+                          ),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final cartItem = {
+                        "productName": widget.product.name,
+                        "productPrice":
+                            "${widget.product.currency} ${widget.product.price}",
+                        "productStats": displayStats, // using computed stats
+                        "productImage": widget.product.image,
                         "productColor": color,
                         "productWarranty": warranty,
                       };
 
-                      CartStorage.addItem(product);
+                      CartStorage.addItem(cartItem);
 
                       Navigator.push(
                         context,
@@ -218,15 +244,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   width: 160,
                   child: ElevatedButton(
                     onPressed: () async {
+                      // Login check for favorites too? User didn't specify, but safer.
+                      // Leaving it open for now as user only said "before add products to the cart"
+
                       await FavoritesDB.addFavorite(
                         FavoriteProduct(
-                          name: widget.name,
-                          price: widget.price,
-                          stats: widget.stats,
-                          image: widget.imagepath,
+                          name: widget.product.name,
+                          price:
+                              "${widget.product.currency} ${widget.product.price}",
+                          stats: displayStats,
+                          image: widget.product.image,
                           color: color,
                           warranty: warranty,
-                          description: widget.description,
+                          description: widget.product.description,
                         ),
                       );
 

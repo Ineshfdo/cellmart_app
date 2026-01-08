@@ -6,6 +6,7 @@ import 'package:cellmart_app/screens/ProductsScreen.dart';
 import 'package:cellmart_app/screens/SignupScreen.dart';
 import 'package:cellmart_app/screens/FavoritesScreen.dart';
 import 'package:cellmart_app/screens/loginScreen.dart';
+import 'package:cellmart_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class Wrapper extends StatefulWidget {
@@ -84,39 +85,61 @@ class _WrapperState extends State<Wrapper> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // LOGIN & SIGN UP
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    slideFromLeftNavigate(const LoginScreen());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? Colors.white : Colors.black,
-                  ),
-                  child: Text(
-                    "Login",
-                    style: TextStyle(
-                      color: isDark ? Colors.black : Colors.white,
+            // LOGIN & SIGN UP / LOGOUT
+            ValueListenableBuilder<bool>(
+              valueListenable: AuthService.isLoggedInNotifier,
+              builder: (context, isLoggedIn, child) {
+                if (isLoggedIn) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      AuthService.logout();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Logged out successfully'),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    slideFromLeftNavigate(const SignupScreen());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? Colors.white : Colors.black,
-                  ),
-                  child: Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      color: isDark ? Colors.black : Colors.white,
+                    child: const Text("Log Out"),
+                  );
+                }
+                return Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        slideFromLeftNavigate(const LoginScreen());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? Colors.white : Colors.black,
+                      ),
+                      child: Text(
+                        "Login",
+                        style: TextStyle(
+                          color: isDark ? Colors.black : Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        slideFromLeftNavigate(const SignUpScreen());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? Colors.white : Colors.black,
+                      ),
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          color: isDark ? Colors.black : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
 
             // CART

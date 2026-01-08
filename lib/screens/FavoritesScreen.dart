@@ -108,7 +108,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           color: isDark
                               ? const Color(0xFF2A2A2A)
                               : Colors.grey[200],
-                          child: Image.asset(p.image, fit: BoxFit.contain),
+                          child: Image.asset(
+                            p.image.startsWith('Images/')
+                                ? p.image
+                                : 'Images/${p.image}',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.image,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                          ),
                         ),
                       ),
 

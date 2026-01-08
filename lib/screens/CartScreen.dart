@@ -76,10 +76,11 @@ class _CartScreenState extends State<CartScreen> {
     // Calculate total price
     double totalAmount = 0;
     for (var product in cartItems) {
-      String priceString = product["productPrice"]!
-          .replaceAll("Rs", "")
-          .replaceAll(",", "")
-          .trim();
+      // Robustly extract the numeric part of the price string
+      String priceString = product["productPrice"]!.replaceAll(
+        RegExp(r'[^0-9.]'),
+        '',
+      );
       totalAmount += double.tryParse(priceString) ?? 0;
     }
 
@@ -159,10 +160,21 @@ class _CartScreenState extends State<CartScreen> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: Image.asset(
-                                    product["productImage"]!,
+                                    product["productImage"]!.startsWith(
+                                          'Images/',
+                                        )
+                                        ? product["productImage"]!
+                                        : 'Images/${product["productImage"]!}',
                                     width: 100,
                                     height: 100,
                                     fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.image,
+                                              size: 80,
+                                              color: Colors.grey,
+                                            ),
                                   ),
                                 ),
                                 const SizedBox(width: 20),

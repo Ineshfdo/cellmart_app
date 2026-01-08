@@ -130,7 +130,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.asset(
-                              product["productImage"]!,
+                              product["productImage"]!.startsWith('Images/')
+                                  ? product["productImage"]!
+                                  : 'Images/${product["productImage"]!}',
                               width: 100,
                               height: 100,
                               fit: BoxFit.contain,
