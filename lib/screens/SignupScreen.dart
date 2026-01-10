@@ -157,6 +157,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.grey[50],
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'Sign Up',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -194,6 +202,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Logo Section
+                          FadeInDown(
+                            duration: const Duration(milliseconds: 700),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isDarkMode
+                                    ? Colors.black26
+                                    : Colors.blue.shade50,
+                              ),
+                              child: Icon(
+                                Icons.shopping_bag_rounded,
+                                size: 60,
+                                color: cellMartBlue,
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 16),
 
                           Text(

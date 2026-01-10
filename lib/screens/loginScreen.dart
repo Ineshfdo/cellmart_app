@@ -103,6 +103,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.grey[50],
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'Login',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -271,27 +279,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
 
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Forgot password feature coming soon!',
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Forgot Password?',
-                                style: TextStyle(
-                                  color: cellMartBlue,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
                           const SizedBox(height: 20),
 
                           SizedBox(

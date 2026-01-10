@@ -2,14 +2,20 @@ import 'package:cellmart_app/components/wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:battery_plus/battery_plus.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:cellmart_app/config/api_config.dart';
+import 'package:cellmart_app/services/auth_service.dart';
 
 class CheckoutScreen extends StatefulWidget {
+  final String customerPhone;
   final String address;
   final double total;
   final List<Map<String, String>> items;
 
   const CheckoutScreen({
     super.key,
+    required this.customerPhone,
     required this.address,
     required this.total,
     required this.items,
@@ -37,20 +43,145 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Show loading indicator
     QuickAlert.show(
       context: context,
-      type: QuickAlertType.success,
-      title: 'Order Placed!',
-      text: 'Your order was placed successfully.\nPay on Delivery.',
-      confirmBtnText: 'OK',
-      onConfirmBtnTap: () {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const Wrapper()),
-          (route) => false,
-        );
-      },
+      type: QuickAlertType.loading,
+      title: 'Processing',
+      text: 'Placing your order...',
     );
+
+    try {
+      // Prepare products data
+      List<Map<String, dynamic>> productsData = widget.items.map((item) {
+        return {
+          'name': item['productName'],
+          'price': item['productPrice'],
+          'stats': item['productStats'],
+          'color': item['productColor'],
+          'warranty': item['productWarranty'],
+          'image': item['productImage'],
+          'quantity':
+              int.tryParse(item['quantity'] ?? '1') ?? 1, // Include quantity
+        };
+      }).toList();
+
+      // Prepare order data
+      final orderData = {
+        'customer_name': 'N/A', // Placeholder for backend validation
+        'customer_email':
+            'n/a@example.com', // Placeholder for backend validation
+        'customer_phone': widget.customerPhone,
+        'delivery_address': widget.address,
+        'products': productsData, // Send as array, not JSON string
+        'total_amount': widget.total,
+        'currency': 'LKR',
+        'status': 'pending',
+      };
+
+      // Make API call
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      // Add authentication token if available
+      if (AuthService.token != null) {
+        headers['Authorization'] = 'Bearer ${AuthService.token}';
+      }
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.checkout),
+        headers: headers,
+        body: jsonEncode(orderData),
+      );
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Log response for debugging
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      // Check for successful response
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        try {
+          final responseData = jsonDecode(response.body);
+
+          // Try to get order ID from different possible response structures
+          String orderId = 'N/A';
+          if (responseData['order'] != null &&
+              responseData['order']['id'] != null) {
+            orderId = responseData['order']['id'].toString();
+          } else if (responseData['id'] != null) {
+            orderId = responseData['id'].toString();
+          } else if (responseData['order_id'] != null) {
+            orderId = responseData['order_id'].toString();
+          }
+
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.success,
+            title: 'Order Placed!',
+            text:
+                'Your order was placed successfully.\nOrder ID: $orderId\nPay on Delivery.',
+            confirmBtnText: 'OK',
+            onConfirmBtnTap: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const Wrapper()),
+                (route) => false,
+              );
+            },
+          );
+        } catch (e) {
+          // Even if we can't parse the response, the order was successful
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.success,
+            title: 'Order Placed!',
+            text: 'Your order was placed successfully.\nPay on Delivery.',
+            confirmBtnText: 'OK',
+            onConfirmBtnTap: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const Wrapper()),
+                (route) => false,
+              );
+            },
+          );
+        }
+      } else {
+        // Show detailed error for debugging
+        String errorMessage = 'Failed to place order. Please try again.';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage =
+              'Error ${response.statusCode}: ${errorData['message'] ?? errorData.toString()}';
+        } catch (e) {
+          errorMessage = 'Error ${response.statusCode}: ${response.body}';
+        }
+
+        QuickAlert.show(
+          context: context,
+          type: QuickAlertType.error,
+          title: 'Order Failed',
+          text: errorMessage,
+          confirmBtnText: 'OK',
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      Navigator.pop(context);
+
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        title: 'Error',
+        text: 'An error occurred: ${e.toString()}',
+        confirmBtnText: 'OK',
+      );
+    }
   }
 
   @override
@@ -84,6 +215,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              "Customer Information:",
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[800] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.phone,
+                        size: 18,
+                        color: textColor?.withOpacity(0.7),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.customerPhone,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
             Text(
               "Delivery Address:",
               style: theme.textTheme.titleMedium?.copyWith(
@@ -151,6 +318,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: textColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  "Qty: ${product["quantity"] ?? '1'}",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: textColor?.withOpacity(0.8),
                                   ),
                                 ),
                                 const SizedBox(height: 5),

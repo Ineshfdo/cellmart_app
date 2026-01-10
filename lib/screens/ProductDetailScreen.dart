@@ -209,6 +209,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         "productImage": widget.product.image,
                         "productColor": color,
                         "productWarranty": warranty,
+                        "quantity": "1", // Add quantity with default value
                       };
 
                       CartStorage.addItem(cartItem);

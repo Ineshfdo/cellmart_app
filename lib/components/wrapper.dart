@@ -8,6 +8,8 @@ import 'package:cellmart_app/screens/FavoritesScreen.dart';
 import 'package:cellmart_app/screens/loginScreen.dart';
 import 'package:cellmart_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:battery_plus/battery_plus.dart';
 
 class Wrapper extends StatefulWidget {
   const Wrapper({super.key});
@@ -19,6 +21,10 @@ class Wrapper extends StatefulWidget {
 class _WrapperState extends State<Wrapper> {
   int selectedItem = 0;
   late final List<Widget> screens;
+  final Battery _battery = Battery();
+  int _batteryLevel = 100;
+  BatteryState _batteryState = BatteryState.full;
+  StreamSubscription<BatteryState>? _batteryStateSubscription;
 
   @override
   void initState() {
@@ -29,6 +35,68 @@ class _WrapperState extends State<Wrapper> {
       ContactUsScreen(),
       AboutUsscreen(),
     ];
+
+    // Initial battery level
+    _battery.batteryLevel.then((level) {
+      if (mounted) {
+        setState(() {
+          _batteryLevel = level;
+        });
+      }
+    });
+
+    // Listen to battery state changes
+    _batteryStateSubscription = _battery.onBatteryStateChanged.listen((state) {
+      if (mounted) {
+        _battery.batteryLevel.then((level) {
+          setState(() {
+            _batteryState = state;
+            _batteryLevel = level;
+          });
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _batteryStateSubscription?.cancel();
+    super.dispose();
+  }
+
+  Widget _buildBatteryIndicator() {
+    IconData iconData = Icons.battery_full;
+    Color color = Colors.green;
+
+    if (_batteryState == BatteryState.charging) {
+      iconData = Icons.battery_charging_full;
+      color = Colors.blue;
+    } else if (_batteryLevel <= 20) {
+      iconData = Icons.battery_alert;
+      color = Colors.red;
+    } else if (_batteryLevel <= 50) {
+      iconData = Icons.battery_3_bar;
+      color = Colors.orange;
+    } else {
+      iconData = Icons.battery_full;
+      color = Colors.green;
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(iconData, color: color, size: 28),
+        Text(
+          "$_batteryLevel%",
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
   }
 
   // LOGIN & SIGNUP → SLIDE FROM LEFT
@@ -134,6 +202,7 @@ class _WrapperState extends State<Wrapper> {
                         "Sign Up",
                         style: TextStyle(
                           color: isDark ? Colors.black : Colors.white,
+                          fontSize: 13.5,
                         ),
                       ),
                     ),
@@ -142,13 +211,13 @@ class _WrapperState extends State<Wrapper> {
               },
             ),
 
-            // CART
+            // FAV, CART & BATTERY
             Row(
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(10), // Reduced padding
                     backgroundColor: Colors.green,
                   ),
                   onPressed: () {
@@ -156,14 +225,14 @@ class _WrapperState extends State<Wrapper> {
                   },
                   child: const Icon(
                     Icons.favorite,
-                    size: 22,
+                    size: 20, // Slightly smaller
                     color: Colors.white,
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(10), // Reduced padding
                     backgroundColor: const Color.fromARGB(255, 0, 88, 139),
                   ),
                   onPressed: () {
@@ -171,10 +240,12 @@ class _WrapperState extends State<Wrapper> {
                   },
                   child: const Icon(
                     Icons.shopping_cart,
-                    size: 22,
+                    size: 20, // Slightly smaller
                     color: Colors.white,
                   ),
                 ),
+                const SizedBox(width: 10),
+                _buildBatteryIndicator(),
               ],
             ),
           ],

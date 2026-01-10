@@ -13,6 +13,7 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   bool _isFetchingLocation = false; // To show a loading state
 
   // --- Location Logic ---
@@ -81,7 +82,9 @@ class _CartScreenState extends State<CartScreen> {
         RegExp(r'[^0-9.]'),
         '',
       );
-      totalAmount += double.tryParse(priceString) ?? 0;
+      double price = double.tryParse(priceString) ?? 0;
+      int quantity = int.tryParse(product['quantity'] ?? '1') ?? 1;
+      totalAmount += price * quantity;
     }
 
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
@@ -225,6 +228,98 @@ class _CartScreenState extends State<CartScreen> {
                                           color: textColor,
                                         ),
                                       ),
+                                      const SizedBox(height: 5),
+                                      // Quantity controls
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "Qty:",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: textColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: Colors.grey,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      int qty =
+                                                          int.tryParse(
+                                                            product['quantity'] ??
+                                                                '1',
+                                                          ) ??
+                                                          1;
+                                                      if (qty > 1) {
+                                                        product['quantity'] =
+                                                            (qty - 1)
+                                                                .toString();
+                                                      }
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(8),
+                                                    child: Icon(
+                                                      Icons.remove,
+                                                      size: 16,
+                                                      color: textColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                      ),
+                                                  child: Text(
+                                                    product['quantity'] ?? '1',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: textColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                                InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      int qty =
+                                                          int.tryParse(
+                                                            product['quantity'] ??
+                                                                '1',
+                                                          ) ??
+                                                          1;
+                                                      product['quantity'] =
+                                                          (qty + 1).toString();
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(8),
+                                                    child: Icon(
+                                                      Icons.add,
+                                                      size: 16,
+                                                      color: textColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -261,6 +356,23 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   child: Column(
                     children: [
+                      TextField(
+                        controller: _phoneController,
+                        style: TextStyle(color: textColor),
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          labelText: "Phone Number",
+                          labelStyle: TextStyle(color: textColor),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.grey[850]
+                              : Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
                       TextField(
                         controller: _addressController,
                         style: TextStyle(color: textColor),
@@ -331,6 +443,15 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                         onPressed: () {
+                          // Validate remaining fields
+                          if (_phoneController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please enter your phone number"),
+                              ),
+                            );
+                            return;
+                          }
                           if (_addressController.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -351,6 +472,7 @@ class _CartScreenState extends State<CartScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => CheckoutScreen(
+                                customerPhone: _phoneController.text,
                                 address: _addressController.text,
                                 total: totalAmount,
                                 items: itemsCopy,
