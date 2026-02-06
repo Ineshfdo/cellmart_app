@@ -42,6 +42,7 @@ class FavoritesDB {
     );
   }
 
+  // Get all favorites products
   static Future<List<FavoriteProduct>> getFavorites() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('favorites');
