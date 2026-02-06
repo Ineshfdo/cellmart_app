@@ -36,8 +36,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final List<String> colorOptions = ["Black", "White", "Blue", "Red"];
     final List<String> warrantyOptions = ["1 year", "3 years", "5 years"];
 
-    // Construct stats string if not present, or use what we have
-    // The API product has 'ram', 'storage'. The old UI used 'stats' like "8GB - 256GB"
     String displayStats = "";
     if (widget.product.ram != null && widget.product.storage != null) {
       displayStats = "${widget.product.ram} - ${widget.product.storage}";
@@ -152,7 +150,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const Divider(),
             const SizedBox(height: 10),
 
-            /// Color Dropdown (UNCHANGED)
             _dropdownSection(
               title: "Choose the color",
               value: color,
@@ -163,7 +160,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               },
             ),
 
-            /// Warranty Dropdown (UNCHANGED)
             _dropdownSection(
               title: "Choose the warranty",
               value: warranty,
@@ -176,7 +172,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             const SizedBox(height: 30),
 
-            /// BUTTONS
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -205,11 +200,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         "productName": widget.product.name,
                         "productPrice":
                             "${widget.product.currency} ${widget.product.price}",
-                        "productStats": displayStats, // using computed stats
+                        "productStats": displayStats,
                         "productImage": widget.product.image,
                         "productColor": color,
                         "productWarranty": warranty,
-                        "quantity": "1", // Add quantity with default value
+                        "quantity": "1",
                       };
 
                       CartStorage.addItem(cartItem);
@@ -240,14 +235,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                 const SizedBox(width: 12),
 
-                /// ADD TO FAVORITES → GO TO FAVORITES SCREEN
+                /// ADD TO FAVORITES
                 SizedBox(
                   width: 160,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Login check for favorites too? User didn't specify, but safer.
-                      // Leaving it open for now as user only said "before add products to the cart"
-
                       await FavoritesDB.addFavorite(
                         FavoriteProduct(
                           name: widget.product.name,
@@ -297,7 +289,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  /// Dark-mode-safe animated dropdown (UNCHANGED)
+  /// Dark-mode-safe animated dropdown
   Widget _dropdownSection({
     required String title,
     required String value,
