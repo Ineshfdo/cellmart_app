@@ -4,7 +4,7 @@ import 'package:cellmart_app/screens/cartScreen.dart';
 import 'package:cellmart_app/components/cart_storage.dart';
 import 'package:flutter/material.dart';
 
-// ✅ Favorites imports
+// Favorites imports
 import 'package:cellmart_app/db/favorites_db.dart';
 import 'package:cellmart_app/models/favorite_product.dart';
 import 'package:cellmart_app/screens/FavoritesScreen.dart';
@@ -152,7 +152,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const Divider(),
             const SizedBox(height: 10),
 
-            /// 🎨 Color Dropdown (UNCHANGED)
+            /// Color Dropdown (UNCHANGED)
             _dropdownSection(
               title: "Choose the color",
               value: color,
@@ -163,7 +163,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               },
             ),
 
-            /// ⏳ Warranty Dropdown (UNCHANGED)
+            /// Warranty Dropdown (UNCHANGED)
             _dropdownSection(
               title: "Choose the warranty",
               value: warranty,
@@ -240,7 +240,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                 const SizedBox(width: 12),
 
-                /// 💚 ADD TO FAVORITES → GO TO FAVORITES SCREEN
+                /// ADD TO FAVORITES → GO TO FAVORITES SCREEN
                 SizedBox(
                   width: 160,
                   child: ElevatedButton(
@@ -261,7 +261,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       );
 
-                      // ✅ Navigate to Favorites Screen
+                      // Navigate to Favorites Screen
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -297,7 +297,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  /// 🔥 Dark-mode-safe animated dropdown (UNCHANGED)
+  /// Dark-mode-safe animated dropdown (UNCHANGED)
   Widget _dropdownSection({
     required String title,
     required String value,

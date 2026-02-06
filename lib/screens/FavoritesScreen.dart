@@ -99,7 +99,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// IMAGE (✅ ClipRRect applied)
+                      /// IMAGE (ClipRRect applied)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
