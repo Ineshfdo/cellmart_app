@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          // Navigate back or to home screen with result true
+          // Navigate home screen with result true
           Navigator.pop(context, true);
         } else {
           String errorMessage = result['message'];

@@ -99,7 +99,6 @@ class _WrapperState extends State<Wrapper> {
     );
   }
 
-  // LOGIN & SIGNUP → SLIDE FROM LEFT
   void slideFromLeftNavigate(Widget page) {
     Navigator.push(
       context,
@@ -121,7 +120,6 @@ class _WrapperState extends State<Wrapper> {
     );
   }
 
-  //  CART → SLIDE FROM RIGHT
   void slideFromRightNavigate(Widget page) {
     Navigator.push(
       context,
