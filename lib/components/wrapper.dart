@@ -23,7 +23,10 @@ class _WrapperState extends State<Wrapper> {
   late final List<Widget> screens;
   final Battery _battery = Battery();
   int _batteryLevel = 100;
+  // Stores the current state (charging, full, discharging)
   BatteryState _batteryState = BatteryState.full;
+
+  // Subscription to listen for battery changes in real-time
   StreamSubscription<BatteryState>? _batteryStateSubscription;
 
   @override
@@ -36,7 +39,7 @@ class _WrapperState extends State<Wrapper> {
       AboutUsscreen(),
     ];
 
-    // Initial battery level
+    // Fetch the battery level when the app starts
     _battery.batteryLevel.then((level) {
       if (mounted) {
         setState(() {
@@ -45,13 +48,14 @@ class _WrapperState extends State<Wrapper> {
       }
     });
 
-    // Listen to battery state changes
+    // Start listening for changes (like plugging in a charger)
     _batteryStateSubscription = _battery.onBatteryStateChanged.listen((state) {
       if (mounted) {
+        // When state changes, Refresh the battery level
         _battery.batteryLevel.then((level) {
           setState(() {
-            _batteryState = state;
-            _batteryLevel = level;
+            _batteryState = state; // Update charging or discharging
+            _batteryLevel = level; // Update percentage
           });
         });
       }
@@ -68,6 +72,7 @@ class _WrapperState extends State<Wrapper> {
     IconData iconData = Icons.battery_full;
     Color color = Colors.green;
 
+    // Logic to change the icon and color based on status
     if (_batteryState == BatteryState.charging) {
       iconData = Icons.battery_charging_full;
       color = Colors.blue;
