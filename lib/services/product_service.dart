@@ -4,15 +4,19 @@ import '../config/api_config.dart';
 import '../models/product.dart';
 
 class ProductService {
+  // Fetches all products from the backend API.
   static Future<List<Product>> getProducts() async {
     try {
       final response = await http.get(Uri.parse(ApiConfig.getAllProducts));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        // The API returns { "products": [...] }
+
         if (decoded['products'] != null) {
+          // Get products from that Map.
           final List list = decoded['products'];
+
+          // Loops through every item in that list and converts each one into a object
           return list.map((e) => Product.fromJson(e)).toList();
         }
         return [];
@@ -24,7 +28,6 @@ class ProductService {
     }
   }
 
-  // Helper to build image URL
   static String getImageUrl(String imagePath) {
     if (imagePath.startsWith('http')) {
       return imagePath;
@@ -36,8 +39,7 @@ class ProductService {
       cleanPath = cleanPath.substring(1);
     }
 
-    // If the path from DB already includes "Images/", we append it to hostUrl
-    // Otherwise we append it to assetsUrl (which includes /Images)
+    // Checks whether the image path already starts with "images/" and chooses the correct base URL (hostUrl or assetsUrl) to give valid full image URL.
     if (cleanPath.toLowerCase().startsWith('images/')) {
       return "${ApiConfig.hostUrl}/$cleanPath";
     }

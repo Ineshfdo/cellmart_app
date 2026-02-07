@@ -27,7 +27,10 @@ class Product {
     this.updatedAt,
   });
 
+  //Transforms a JSON map into a structured Product object by mapping the data keys to the class properties.
+
   factory Product.fromJson(Map<String, dynamic> json) {
+    //Get the image path from JSON and removes the leading slash.
     String rawImage = json['image']?.toString() ?? "";
     if (rawImage.startsWith('/')) {
       rawImage = rawImage.substring(1);
@@ -48,11 +51,4 @@ class Product {
       updatedAt: json['updated_at']?.toString(),
     );
   }
-
-  // Helper to get full image URL or asset path
-  // Since user mentioned "load the image form the Images folder", we might need to handle this.
-  // We'll assume if it's not a full URL, it's relative to server.
-  // HOWEVER, for now, we will just return the image string and handle logic in UI or Service.
-  // Actually, let's look at the user request again. "do the products image get the url and load the image form the Images folder"
-  // It likely means: http://10.0.2.2:8000/Images/<filename>.
 }

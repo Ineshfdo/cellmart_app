@@ -5,6 +5,7 @@ class ApiConfig {
   static const String assetsUrl = "$hostUrl/Images";
 
   static const String getAllProducts = "$baseUrl/getAllProducts";
+
   static const String login = "$baseUrl/login";
   static const String register = "$baseUrl/register";
   static const String checkout = "$baseUrl/checkout";
