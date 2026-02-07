@@ -6,7 +6,6 @@ import 'package:cellmart_app/components/footer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-// New Imports
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:quickalert/quickalert.dart';
 
