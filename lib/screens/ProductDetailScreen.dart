@@ -181,7 +181,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (!AuthService.isLoggedIn) {
-                        // Prompt login
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text("Please login to add items to cart"),
@@ -196,6 +195,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         return;
                       }
 
+                      // Prepares and collects the product details to be added to the cart.
                       final cartItem = {
                         "productName": widget.product.name,
                         "productPrice":

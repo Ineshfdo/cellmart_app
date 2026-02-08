@@ -30,14 +30,16 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   // Image Picker Logic
   final ImagePicker _picker = ImagePicker();
-  XFile? _selectedImage;
+  XFile? _selectedImage; // Stores the selected/captured image file.
 
+  // Checks if the current platform supports image picking (Android/iOS only).
   bool get _canPickImage {
     if (kIsWeb) return false;
     return defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
   }
 
+  // Opens the camera or gallery based on the source parameter.
   Future<void> _pickImage(ImageSource source) async {
     if (!_canPickImage) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -48,6 +50,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       return;
     }
 
+    // Captures/selects an image and stores it in _selectedImage.
     final image = await _picker.pickImage(source: source);
     if (image != null && mounted) {
       setState(() => _selectedImage = image);
@@ -126,6 +129,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         Wrap(
           spacing: 12,
           children: [
+            // Camera button - Opens device camera when pressed.
             OutlinedButton.icon(
               onPressed: () => _pickImage(ImageSource.camera),
               icon: const Icon(Icons.camera_alt),
@@ -140,6 +144,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 ),
               ),
             ),
+            // Gallery button - Opens photo gallery when pressed.
             OutlinedButton.icon(
               onPressed: () => _pickImage(ImageSource.gallery),
               icon: const Icon(Icons.photo_library),
@@ -156,6 +161,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ),
           ],
         ),
+        // Displays the captured/selected image as a preview.
         if (_selectedImage != null) ...[
           const SizedBox(height: 16),
           ClipRRect(

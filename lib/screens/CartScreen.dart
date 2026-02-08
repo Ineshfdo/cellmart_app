@@ -1,8 +1,8 @@
 import 'package:cellmart_app/screens/CheckoutScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:cellmart_app/components/cart_storage.dart';
-import 'package:geolocator/geolocator.dart'; // Add this
-import 'package:geocoding/geocoding.dart'; // Add this
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -14,20 +14,21 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  bool _isFetchingLocation = false; // To show a loading state
+  bool _isFetchingLocation = false;
 
   // --- Location Logic ---
+  // Fetches the user's current physical location and updates the address field.
   Future<void> _getCurrentLocation() async {
     setState(() => _isFetchingLocation = true);
 
     try {
-      // 1. Check if services are enabled
+      // 1. Check if GPS services are enabled on the device.
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw 'Location services are disabled.';
       }
 
-      // 2. Check/Request permissions
+      // 2. Check and request user permission to access location data.
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -40,20 +41,20 @@ class _CartScreenState extends State<CartScreen> {
         throw 'Location permissions are permanently denied.';
       }
 
-      // 3. Get Coordinates
+      // 3. Get the current GPS coordinates (Latitude and Longitude).
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // 4. Convert Coordinates to Address (Reverse Geocoding)
+      // 4. Convert coordinates into a readable address (Reverse Geocoding).
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
 
+      // Formats the location data into a readable address and updates the UI.
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        // Construct a readable string
         String address =
             "${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}";
 
