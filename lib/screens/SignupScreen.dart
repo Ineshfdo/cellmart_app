@@ -108,7 +108,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = true;
       });
 
-      // Call the API
       final result = await AuthService.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),

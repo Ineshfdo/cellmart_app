@@ -58,7 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      // Call the API
       final result = await AuthService.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
